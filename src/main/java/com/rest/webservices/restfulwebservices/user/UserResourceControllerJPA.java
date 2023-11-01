@@ -29,19 +29,19 @@ import jakarta.validation.Valid;
 public class UserResourceControllerJPA {
 	
 	@Autowired
-	private UserRepository repository;
+	private UserRepository userRepository;
 	
 	@Autowired
 	private PostRepository postRepository;
 	
 	@GetMapping("/users")
 	public List<User> retrieveAllUser() {
-		return repository.findAll();
+		return userRepository.findAll();
 	}
 	
 	@GetMapping("/users/{id}")
 	public EntityModel<User> retrieveUSer(@PathVariable Integer id) {
-		Optional<User> user = repository.findById(id);
+		Optional<User> user = userRepository.findById(id);
 		if(user.isEmpty()) {
 			throw new UserNotFoundException("User Not found with UserID "+id);
 		}
@@ -55,7 +55,7 @@ public class UserResourceControllerJPA {
 	
 	@PostMapping("/users")
 	public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
-		User savedUser = repository.save(user);
+		User savedUser = userRepository.save(user);
 		URI location = ServletUriComponentsBuilder
 				.fromCurrentRequest()
 				.path("/{id}")
@@ -66,13 +66,13 @@ public class UserResourceControllerJPA {
 	
 	@DeleteMapping("/users/{id}")
 	public void deleteUser(@PathVariable Integer id) {
-		repository.deleteById(id);
+		userRepository.deleteById(id);
 	}
 	
 	
 	@GetMapping("/users/{id}/posts")
 	public List<Post> retrievePostsForUser(@PathVariable Integer id) {
-		Optional<User> user = repository.findById(id);
+		Optional<User> user = userRepository.findById(id);
 		if(user.isEmpty()) {
 			throw new UserNotFoundException("User Not found with UserID "+id);
 		}
@@ -88,7 +88,7 @@ public class UserResourceControllerJPA {
 	
 	@PostMapping("/users/{id}/posts")
 	public ResponseEntity<Object> createPost(@Valid @PathVariable int id, @RequestBody Post post) {
-		Optional<User> user = repository.findById(id);
+		Optional<User> user = userRepository.findById(id);
 		if(user.isEmpty()) {
 			throw new UserNotFoundException("user not found with id:: "+id);
 		}
@@ -107,7 +107,22 @@ public class UserResourceControllerJPA {
 	
 	
 	
-	
+	@GetMapping("/users/{userId}/posts/{postId}")
+	public ResponseEntity<Object> createPost(@Valid @PathVariable int userId, @PathVariable int postId) {
+		Optional<User> user = userRepository.findById(userId);
+		if(user.isEmpty()) {
+			throw new UserNotFoundException("user not found with id:: "+userId);
+		}
+		
+		
+		URI location = ServletUriComponentsBuilder
+				.fromCurrentRequest()
+				.path("/{userId}")
+				.buildAndExpand(savedPost.getId())
+				.toUri();
+				
+		return ResponseEntity.created(location).build();
+	}
 	
 	
 }
